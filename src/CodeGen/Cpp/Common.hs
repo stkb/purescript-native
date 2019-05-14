@@ -11,6 +11,10 @@ import qualified Data.Text as T
 import Language.PureScript.Crash
 import Language.PureScript.Names
 
+moduleNameToDir ::  ModuleName -> Text
+moduleNameToDir (ModuleName pns) =
+  T.intercalate "." (runProperName `map` pns)
+
 moduleNameToCpp :: ModuleName -> Text
 moduleNameToCpp (ModuleName pns) =
   let name = T.intercalate "_" (runProperName `map` pns)

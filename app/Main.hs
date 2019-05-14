@@ -67,7 +67,7 @@ main = do
             putStrLn help
           when (not $ null files) $ do
             let filepath = takeDirectory (head files)
-                baseOutpath = joinPath $ (init $ splitDirectories filepath) ++ [outdir]
+                baseOutpath = joinPath $ (init $ splitDirectories filepath)
             writeRuntimeFiles baseOutpath
             Par.mapM (generateCode opts' baseOutpath) files
             return ()
@@ -80,7 +80,7 @@ generateCode opts baseOutpath jsonFile = do
       dirparts = splitDirectories $ filepath
       mname = (\c -> if c == '.' then '_' else c) <$> last dirparts
       basedir = joinPath $ init dirparts
-      possInterfaceFilename = basedir </> outdir </> mname </> interfaceFileName mname
+      possInterfaceFilename = basedir </> mname </> interfaceFileName mname
   exists <- doesFileExist possInterfaceFilename
   if exists
     then do
@@ -95,10 +95,11 @@ transpile opts baseOutpath jsonFile = do
   let module' = jsonToModule $ parseJson jsonText
   ((interface, foreigns, asts, implHeader, implFooter), _) <- runSupplyT 5 (moduleToCpp module' Nothing)
   let mn = moduleNameToCpp $ moduleName module'
+      mDir = moduleNameToDir $ moduleName module'
       implementation = prettyPrintCpp asts
-      outpath = joinPath [baseOutpath, T.unpack mn]
-      interfacePath = outpath </> interfaceFileName (T.unpack mn)
-      implPath = outpath </> implFileName mn
+      outpath = joinPath [baseOutpath, T.unpack mDir]
+      interfacePath = outpath </> "index.h"
+      implPath = outpath </> "index.cpp"
   putStrLn interfacePath
   createDirectoryIfMissing True outpath
   B.writeFile interfacePath $ T.encodeUtf8 $ conv interface
@@ -125,9 +126,6 @@ writeRuntimeFiles baseOutpath = do
     B.writeFile fn  $(embedFile "runtime/functions.h")
     B.writeFile dict $(embedFile "runtime/dictionary.h")
     B.writeFile recur $(embedFile "runtime/recursion.h")
-
-outdir :: FilePath
-outdir = "src"
 
 interfaceFileName :: String -> FilePath
 interfaceFileName mn = mn <> ".h"

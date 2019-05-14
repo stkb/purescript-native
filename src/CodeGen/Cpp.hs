@@ -108,7 +108,7 @@ moduleToCpp (Module _ coms mn _ imps _ foreigns decls) _ =
   importToCpp mnLookup mn' = do
     let ((_, _, _, _), mnSafe) = fromMaybe (internalError "Missing value in mnLookup") $ M.lookup mn' mnLookup
         mname = moduleNameToCpp mnSafe
-    pure $ "#include \"" <> mname <> "/" <> mname <> ".h\"\n"
+    pure $ "#include \"" <> moduleNameToDir mnSafe <> "/index.h\"\n"
 
   -- | Replaces the `ModuleName`s in the AST so that the generated code refers to
   -- the collision-avoiding renamed module imports.
